@@ -17,9 +17,11 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:     ETCS.SDM,
-                       ETCS.SDM.Types
+                       ETCS.SDM.Types,
+                       ETCS.SDM.BreakingModel
                        ETCS.SDM.BreakingModelConverter
-  other-modules:       ETCS.SDM.Helper
+  other-modules:       ETCS.SDM.Helper,
+                       ETCS.SDM.Intern
   other-extensions:    TemplateHaskell
   build-depends:       base >=4.8,
                        containers,
