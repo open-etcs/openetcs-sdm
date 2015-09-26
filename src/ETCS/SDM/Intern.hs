@@ -48,7 +48,7 @@ validConvertion :: (RealFloat f) =>
   Velocity f -> BreakingPercentage f -> Length f -> BreakPosition -> Bool
 validConvertion v bp l bpos  =
   let lmax = case bpos of
-        PassangerTrainP -> 900 *~ meter
+        PassangerTrainP ->  900 *~ meter
         FreightTrainG   -> 1500 *~ meter
         FreightTrainP   -> 1500 *~ meter
   in (0 *~ kmh <= v) && (v <= 200 *~ kmh) &&
@@ -119,7 +119,8 @@ a_n_ms 2 = (  2.73e-7  *~ ms2, (-4.54e-6) *~ ms2, 5.13e-3 *~ ms2, 0.1300 *~ ms2)
 a_n_ms 3 = (  5.58e-8  *~ ms2, (-6.76e-6) *~ ms2, 5.81e-3 *~ ms2, 0.0479 *~ ms2)
 a_n_ms 4 = (  3.00e-8  *~ ms2, (-3.85e-6) *~ ms2, 5.52e-3 *~ ms2, 0.0480 *~ ms2)
 a_n_ms 5 = (  3.23e-9  *~ ms2,   1.66e-6  *~ ms2, 5.06e-3 *~ ms2, 0.0559 *~ ms2)
-a_n_ms _ = error $ "a_n_ms undefined for given n"
+a_n_ms _ = error "a_n_ms called for undefined n"
+
 
 nfromV :: (RealFloat f, Floating f) => Velocity f -> Velocity f -> Int
 nfromV vlim v
@@ -127,19 +128,19 @@ nfromV vlim v
      (vlim <= 100 *~ kmh)) = 1
   | ((vlim < v) && (v <= 120 *~ kmh) &&
      (100 *~ kmh < vlim) && (vlim <= 120 *~ kmh)) = 2
-  | ((100 *~ kmh < v) && (v <= 120 *~ kmh) &&
+  | ((100 *~ kmh < v)    && (v <= 120 *~ kmh) &&
      (vlim <= 100 *~ kmh)) = 2
   | ((vlim < v) && (v <= 150 *~ kmh) &&
      (120 *~ kmh < vlim) && (vlim <= 150 *~ kmh)) = 3
-  | ((120 *~ kmh < v) && (v <= 150 *~ kmh) &&
+  | ((120 *~ kmh < v)    && (v <= 150 *~ kmh) &&
      (vlim <= 120 *~ kmh)) = 3
   | ((vlim < v) && (v <= 180 *~ kmh) &&
      (150 *~ kmh < vlim) && (vlim <= 180 *~ kmh)) = 4
-  | ((150 *~ kmh < v) && (v <= 180 *~ kmh) &&
+  | ((150 *~ kmh < v)    && (v <= 180 *~ kmh) &&
      (vlim <= 150 *~ kmh)) = 4
-  | ((vlim < v) && (vlim > 180 *~ kmh)) = 5
+  | ((vlim < v)       && (vlim > 180 *~ kmh)) = 5
   | ((180 *~ kmh < v) && (vlim <= 180 *~ kmh)) = 5
-  | otherwise = error "undefinde nfromV vlim"
+  | otherwise = error "nfromV: undefined range"
 
 
 
@@ -191,32 +192,6 @@ t_brake_basic_sb FreightTrainG l
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 t_brake_cm :: (RealFloat f, Floating f) =>
              (BreakPosition -> Length f -> Time f) ->
              BreakPosition -> Length f -> Velocity f -> Time f
@@ -228,8 +203,7 @@ t_brake_cm' :: (RealFloat f, Floating f) =>
 t_brake_cm' f v_target
   | (v_target == 0 *~ kmh) = f
   | (v_target > 0 *~ kmh) = (\bp l -> f bp l * (kto bp))
-  | otherwise =
-      error $ "t_brake_cm undefined for v_target < 0 m/s"
+  | otherwise = error $ "t_brake_cm undefined for v_target < 0 m/s"
 
 
 kto :: (RealFloat f, Floating f) => BreakPosition -> Dimensionless f
