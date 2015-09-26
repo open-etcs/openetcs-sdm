@@ -16,7 +16,6 @@ import           Prelude                              ()
 data BreakPosition = FreightTrainG | PassangerTrainP | FreightTrainP
                    deriving (Show, Read, Eq, Enum, Bounded, Ord)
 
-
 -- | If the brake percentage is captured as Train Data and the
 --   conversion model is applicable, they are used to derive
 --   a 'HasBreakingModel'. See 'breakingModelConverter' for details.
@@ -53,30 +52,38 @@ data BreakingModel f =
     a_normal_service  :: A_Break f
     }
 
-instance (Floating f, RealFloat f) => HasBreakingModelBase BreakingModel f where
-  a_break_emergency = a_break_emergency . breakingModelBase
-  a_break_service = a_break_service . breakingModelBase
-  t_break_emergency = t_break_emergency . breakingModelBase
-  t_break_service = t_break_service . breakingModelBase
-
-data BreakingModelInput f =
-  BreakingModelInput {
+data ConvertingBreakingModelInput f =
+  ConvertingBreakingModelInput {
     _bmiMaxVelocity        :: Velocity f,
     _bmiBreakingPercentage :: BreakingPercentage f,
     _bmiTrainLength        :: Length f,
     _bmiBreakPosition      :: BreakPosition
     }
 
-makeClassy ''BreakingModelInput
 
 
 data ConvertedBreakingModel f =
   ConvertedBreakingModel {
-    _cbmBreakingModelInput :: BreakingModelInput f,
+    _cbmBreakingModelInput :: ConvertingBreakingModelInput f,
     _cbmBreakingModel      :: BreakingModelBase f
     }
 
+
+makePrisms ''BreakPosition
+
+makeClassy ''ConvertingBreakingModelInput
+
 makeLenses ''ConvertedBreakingModel
+
+
+
+
+instance (Floating f, RealFloat f) => HasBreakingModelBase BreakingModel f where
+  a_break_emergency = a_break_emergency . breakingModelBase
+  a_break_service = a_break_service . breakingModelBase
+  t_break_emergency = t_break_emergency . breakingModelBase
+  t_break_service = t_break_service . breakingModelBase
+
 
 
 instance (Floating f, RealFloat f) => HasBreakingModelBase
@@ -95,6 +102,6 @@ instance (Floating f, RealFloat f) =>
            t_break_service = t_break_service  . _cbmBreakingModel
 
 
-instance HasBreakingModelInput (ConvertedBreakingModel f) f where
-  breakingModelInput = cbmBreakingModelInput
+instance HasConvertingBreakingModelInput (ConvertedBreakingModel f) f where
+  convertingBreakingModelInput = cbmBreakingModelInput
 

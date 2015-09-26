@@ -8,7 +8,7 @@ import           Numeric.Units.Dimensional.TF.Prelude
 import           Prelude                              ()
 
 
-validConvertion :: (HasBreakingModelInput i f, RealFloat f) => i -> Bool
+validConvertion :: (HasConvertingBreakingModelInput i f, RealFloat f) => i -> Bool
 validConvertion i   =
   let v    = i ^. bmiMaxVelocity
       bp   = i ^. bmiBreakingPercentage
@@ -23,14 +23,14 @@ validConvertion i   =
 
 
 breakingModelConverter'
-  :: (HasBreakingModelInput i f, RealFloat f, Floating f) => i ->
+  :: (HasConvertingBreakingModelInput i f, RealFloat f, Floating f) => i ->
     ConvertedBreakingModel f
 breakingModelConverter' i =
   let (ea, sa) = basicDeceleration $ i ^. bmiBreakingPercentage
       bpos     = i ^. bmiBreakPosition
       l        = i ^. bmiTrainLength
   in ConvertedBreakingModel {
-    _cbmBreakingModelInput = i ^. breakingModelInput,
+    _cbmBreakingModelInput = i ^. convertingBreakingModelInput,
     _cbmBreakingModel =
       BreakingModelBase (ea, sa, t_brake_emergency_cm bpos l
                         , t_brake_service_cm bpos l)

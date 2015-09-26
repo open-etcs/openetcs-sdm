@@ -2,7 +2,7 @@
 
 module ETCS.SDM.BreakingModelConverter
        ( ConvertedBreakingModel
-       , HasBreakingModelInput, BreakingModelInput
+       , HasConvertingBreakingModelInput, ConvertingBreakingModelInput
        , breakingModelConverter
        ) where
 
@@ -14,7 +14,7 @@ import           Prelude                              ()
 
 
 breakingModelConverter :: (RealFloat f, Floating f) =>
-                         Prism' (BreakingModelInput f) (ConvertedBreakingModel f)
+                         Prism' (ConvertingBreakingModelInput f) (ConvertedBreakingModel f)
 breakingModelConverter =
-  prism' (view breakingModelInput) $ \i ->
+  prism' (view convertingBreakingModelInput) $ \i ->
   if (validConvertion i) then Just . breakingModelConverter' $ i else Nothing
