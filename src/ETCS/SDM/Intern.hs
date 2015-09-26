@@ -30,24 +30,6 @@ instance (Floating f, RealFloat f) => HasBreakingModel BreakingModelBase f where
 -- BreakModelConverter related
 --
 
-data ConvertedBreakingModel f =
-  ConvertedBreakingModel {
-    _cbmMaxVelocity        :: Velocity f,
-    _cbmBreakingPercentage :: BreakingPercentage f,
-    _cbmTrainLength        :: Length f,
-    _cbmBreakPosition      :: BreakPosition,
-    _cbmBreakingModel      :: BreakingModelBase f
-    }
-
-makeLenses ''ConvertedBreakingModel
-
-instance (Floating f, RealFloat f) =>
-         HasBreakingModel ConvertedBreakingModel f where
-           a_break_emergency = a_break_emergency . _cbmBreakingModel
-           a_break_service = a_break_service . _cbmBreakingModel
-           t_break_emergency = t_break_emergency . _cbmBreakingModel
-           t_break_service = t_break_service  . _cbmBreakingModel
-
 
 data BreakingModelInput f =
   BreakingModelInput {
@@ -58,6 +40,29 @@ data BreakingModelInput f =
     }
 
 makeClassy ''BreakingModelInput
+
+
+data ConvertedBreakingModel f =
+  ConvertedBreakingModel {
+    _cbmBreakingModelInput :: BreakingModelInput f,
+    _cbmBreakingModel      :: BreakingModelBase f
+    }
+
+makeLenses ''ConvertedBreakingModel
+
+instance HasBreakingModelInput (ConvertedBreakingModel f) f where
+  breakingModelInput = cbmBreakingModelInput
+
+
+instance (Floating f, RealFloat f) =>
+         HasBreakingModel ConvertedBreakingModel f where
+           a_break_emergency = a_break_emergency . _cbmBreakingModel
+           a_break_service = a_break_service . _cbmBreakingModel
+           t_break_emergency = t_break_emergency . _cbmBreakingModel
+           t_break_service = t_break_service  . _cbmBreakingModel
+
+
+
 
 
 validConvertion :: (HasBreakingModelInput i f, RealFloat f) => i -> Bool
@@ -82,10 +87,7 @@ breakingModelConverter' i =
       bpos     = i ^. bmiBreakPosition
       l        = i ^. bmiTrainLength
   in ConvertedBreakingModel {
-    _cbmMaxVelocity = i ^. bmiMaxVelocity,
-    _cbmBreakPosition = bpos,
-    _cbmTrainLength = l,
-    _cbmBreakingPercentage = i ^. bmiBreakingPercentage,
+    _cbmBreakingModelInput = i ^. breakingModelInput,
     _cbmBreakingModel =
       BreakingModelBase (ea, sa, t_brake_emergency_cm bpos l
                         , t_brake_service_cm bpos l)
