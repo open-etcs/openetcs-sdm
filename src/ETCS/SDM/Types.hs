@@ -35,7 +35,7 @@ type T_Break f = Velocity f -> Time f
 
 -- | A breaking Model which defined the 'A_Break' and 'T_Break' for
 --   emergency and service break.
-class (Floating f, RealFloat f) => HasBreakingModel (t :: * -> *) f where
+class (Floating f, RealFloat f) => HasBreakingModelBase (t :: * -> *) f where
   a_break_emergency :: t f -> A_Break f
   a_break_service   :: t f -> A_Break f
   t_break_emergency :: t f -> T_Break f
@@ -45,6 +45,19 @@ class (Floating f, RealFloat f) => HasBreakingModel (t :: * -> *) f where
 
 newtype BreakingModelBase f =
   BreakingModelBase (A_Break f, A_Break f, T_Break f, T_Break f)
+
+
+data BreakingModel f =
+  BreakingModel {
+    breakingModelBase :: BreakingModelBase f,
+    a_normal_service  :: A_Break f
+    }
+
+instance (Floating f, RealFloat f) => HasBreakingModelBase BreakingModel f where
+  a_break_emergency = a_break_emergency . breakingModelBase
+  a_break_service = a_break_service . breakingModelBase
+  t_break_emergency = t_break_emergency . breakingModelBase
+  t_break_service = t_break_service . breakingModelBase
 
 data BreakingModelInput f =
   BreakingModelInput {
@@ -66,24 +79,22 @@ data ConvertedBreakingModel f =
 makeLenses ''ConvertedBreakingModel
 
 
-instance (Floating f, RealFloat f) => HasBreakingModel BreakingModelBase f where
+instance (Floating f, RealFloat f) => HasBreakingModelBase
+         BreakingModelBase f where
   a_break_emergency (BreakingModelBase (a,_,_,_)) = a
   a_break_service   (BreakingModelBase (_,a,_,_)) = a
   t_break_emergency (BreakingModelBase (_,_,a,_)) = a
   t_break_service   (BreakingModelBase (_,_,_,a)) = a
 
 
---
--- BreakModelConverter related
---
-
-instance HasBreakingModelInput (ConvertedBreakingModel f) f where
-  breakingModelInput = cbmBreakingModelInput
-
-
 instance (Floating f, RealFloat f) =>
-         HasBreakingModel ConvertedBreakingModel f where
+         HasBreakingModelBase ConvertedBreakingModel f where
            a_break_emergency = a_break_emergency . _cbmBreakingModel
            a_break_service = a_break_service . _cbmBreakingModel
            t_break_emergency = t_break_emergency . _cbmBreakingModel
            t_break_service = t_break_service  . _cbmBreakingModel
+
+
+instance HasBreakingModelInput (ConvertedBreakingModel f) f where
+  breakingModelInput = cbmBreakingModelInput
+

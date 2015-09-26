@@ -2,7 +2,7 @@
 
 module ETCS.SDM.BreakingModel
        ( BreakPosition (..), BreakingPercentage, A_Break, T_Break
-       , HasBreakingModel(..)
+       , HasBreakingModelBase(..), a_normal_service
        , NormalServiceModel, a_break_normal_service
        , module ETCS.SDM.BreakingModelConverter
        ) where
@@ -27,8 +27,7 @@ type NormalServiceModel f = BreakPosition -> NormalServiceModelT f
 
 
 
-
-a_break_normal_service :: (HasBreakingModel t f) =>
+a_break_normal_service :: (HasBreakingModelBase t f) =>
                          BreakPosition -> t f -> NormalServiceModel f -> A_Break f
 a_break_normal_service bpos m nsm_f
   |                   (abs0 < a_sb01) = f0
