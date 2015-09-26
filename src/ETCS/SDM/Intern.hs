@@ -1,9 +1,3 @@
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE KindSignatures         #-}
-{-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE TemplateHaskell        #-}
-
 
 module ETCS.SDM.Intern where
 
@@ -12,57 +6,6 @@ import           ETCS.SDM.Helper
 import           ETCS.SDM.Types
 import           Numeric.Units.Dimensional.TF.Prelude
 import           Prelude                              ()
-
-
-
-newtype BreakingModelBase f =
-  BreakingModelBase (A_Break f, A_Break f, T_Break f, T_Break f)
-
-
-instance (Floating f, RealFloat f) => HasBreakingModel BreakingModelBase f where
-  a_break_emergency (BreakingModelBase (a,_,_,_)) = a
-  a_break_service   (BreakingModelBase (_,a,_,_)) = a
-  t_break_emergency (BreakingModelBase (_,_,a,_)) = a
-  t_break_service   (BreakingModelBase (_,_,_,a)) = a
-
-
---
--- BreakModelConverter related
---
-
-
-data BreakingModelInput f =
-  BreakingModelInput {
-    _bmiMaxVelocity        :: Velocity f,
-    _bmiBreakingPercentage :: BreakingPercentage f,
-    _bmiTrainLength        :: Length f,
-    _bmiBreakPosition      :: BreakPosition
-    }
-
-makeClassy ''BreakingModelInput
-
-
-data ConvertedBreakingModel f =
-  ConvertedBreakingModel {
-    _cbmBreakingModelInput :: BreakingModelInput f,
-    _cbmBreakingModel      :: BreakingModelBase f
-    }
-
-makeLenses ''ConvertedBreakingModel
-
-instance HasBreakingModelInput (ConvertedBreakingModel f) f where
-  breakingModelInput = cbmBreakingModelInput
-
-
-instance (Floating f, RealFloat f) =>
-         HasBreakingModel ConvertedBreakingModel f where
-           a_break_emergency = a_break_emergency . _cbmBreakingModel
-           a_break_service = a_break_service . _cbmBreakingModel
-           t_break_emergency = t_break_emergency . _cbmBreakingModel
-           t_break_service = t_break_service  . _cbmBreakingModel
-
-
-
 
 
 validConvertion :: (HasBreakingModelInput i f, RealFloat f) => i -> Bool

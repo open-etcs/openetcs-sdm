@@ -1,18 +1,14 @@
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell       #-}
-{-# LANGUAGE Trustworthy           #-}
+{-# LANGUAGE Trustworthy #-}
 
 module ETCS.SDM.BreakingModelConverter
        ( ConvertedBreakingModel
-       , HasBreakingModelInput(..), BreakingModelInput
+       , HasBreakingModelInput, BreakingModelInput
        , breakingModelConverter
        ) where
 
 import           Control.Lens
 import           ETCS.SDM.Intern
-
+import           ETCS.SDM.Types
 import           Numeric.Units.Dimensional.TF.Prelude
 import           Prelude                              ()
 

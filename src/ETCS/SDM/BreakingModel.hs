@@ -1,3 +1,5 @@
+{-# LANGUAGE Trustworthy #-}
+
 module ETCS.SDM.BreakingModel
        ( BreakPosition (..), BreakingPercentage, A_Break, T_Break
        , HasBreakingModel(..)
