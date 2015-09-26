@@ -1,10 +1,13 @@
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE KindSignatures        #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances      #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE KindSignatures         #-}
+{-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE TemplateHaskell        #-}
 
 
 module ETCS.SDM.Intern where
 
+import           Control.Lens                         hiding ((*~), _2)
 import           ETCS.SDM.Helper
 import           ETCS.SDM.Types
 import           Numeric.Units.Dimensional.TF.Prelude
@@ -36,6 +39,8 @@ data ConvertedBreakingModel f =
     _cbmBreakingModel      :: BreakingModelBase f
     }
 
+makeLenses ''ConvertedBreakingModel
+
 instance (Floating f, RealFloat f) =>
          HasBreakingModel ConvertedBreakingModel f where
            a_break_emergency = a_break_emergency . _cbmBreakingModel
@@ -44,10 +49,23 @@ instance (Floating f, RealFloat f) =>
            t_break_service = t_break_service  . _cbmBreakingModel
 
 
-validConvertion :: (RealFloat f) =>
-  Velocity f -> BreakingPercentage f -> Length f -> BreakPosition -> Bool
-validConvertion v bp l bpos  =
-  let lmax = case bpos of
+data BreakingModelInput f =
+  BreakingModelInput {
+    _bmiMaxVelocity        :: Velocity f,
+    _bmiBreakingPercentage :: BreakingPercentage f,
+    _bmiTrainLength        :: Length f,
+    _bmiBreakPosition      :: BreakPosition
+    }
+
+makeClassy ''BreakingModelInput
+
+
+validConvertion :: (HasBreakingModelInput i f, RealFloat f) => i -> Bool
+validConvertion i   =
+  let v    = i ^. bmiMaxVelocity
+      bp   = i ^. bmiBreakingPercentage
+      l    = i ^. bmiTrainLength
+      lmax = case (i ^. bmiBreakPosition) of
         PassangerTrainP ->  900 *~ meter
         FreightTrainG   -> 1500 *~ meter
         FreightTrainP   -> 1500 *~ meter
@@ -57,21 +75,21 @@ validConvertion v bp l bpos  =
 
 
 breakingModelConverter'
-  :: (RealFloat f, Floating f) =>
-    Velocity f -> BreakingPercentage f -> Length f -> BreakPosition ->
+  :: (HasBreakingModelInput i f, RealFloat f, Floating f) => i ->
     ConvertedBreakingModel f
-breakingModelConverter' vmax lamda l bpos =
-  let (ea, sa) = basicDeceleration lamda
+breakingModelConverter' i =
+  let (ea, sa) = basicDeceleration $ i ^. bmiBreakingPercentage
+      bpos     = i ^. bmiBreakPosition
+      l        = i ^. bmiTrainLength
   in ConvertedBreakingModel {
-    _cbmMaxVelocity = vmax,
+    _cbmMaxVelocity = i ^. bmiMaxVelocity,
     _cbmBreakPosition = bpos,
     _cbmTrainLength = l,
-    _cbmBreakingPercentage = lamda,
+    _cbmBreakingPercentage = i ^. bmiBreakingPercentage,
     _cbmBreakingModel =
       BreakingModelBase (ea, sa, t_brake_emergency_cm bpos l
                         , t_brake_service_cm bpos l)
     }
-
 
 basicDeceleration :: (RealFloat f, Floating f) =>
                     BreakingPercentage f -> (A_Break f, A_Break f)

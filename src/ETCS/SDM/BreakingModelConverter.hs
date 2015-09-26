@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell       #-}
@@ -5,29 +6,26 @@
 
 module ETCS.SDM.BreakingModelConverter
        ( ConvertedBreakingModel
-       , BreakingModelInput
+       , HasBreakingModelInput(..), BreakingModelInput
        , breakingModelConverter
        ) where
 
-import           Control.Lens.Prism
+import           Control.Lens
 import           ETCS.SDM.Intern
-import           ETCS.SDM.Types
+
 import           Numeric.Units.Dimensional.TF.Prelude
 import           Prelude                              ()
 
-type BreakingModelInput f =
-  (Velocity f, BreakingPercentage f, Length f, BreakPosition)
-
 
 breakingModelConverter :: (RealFloat f, Floating f) =>
-                        Prism' (BreakingModelInput f) (ConvertedBreakingModel f)
+                         Prism' (BreakingModelInput f) (ConvertedBreakingModel f)
 breakingModelConverter = prism' a b
-  where a c = ( _cbmMaxVelocity c
-              , _cbmBreakingPercentage c
-              , _cbmTrainLength c
-              , _cbmBreakPosition c)
-        b (vmax, lambda, l, bpos) =
-          if (validConvertion vmax lambda l bpos)
-          then Just $ breakingModelConverter' vmax lambda l bpos
+  where a c = BreakingModelInput {
+          _bmiMaxVelocity = c ^. cbmMaxVelocity,
+          _bmiBreakingPercentage = c ^. cbmBreakingPercentage,
+          _bmiTrainLength = c ^. cbmTrainLength,
+          _bmiBreakPosition = c ^. cbmBreakPosition
+          }
+        b i =
+          if (validConvertion i) then Just $ breakingModelConverter' i
           else Nothing
-
