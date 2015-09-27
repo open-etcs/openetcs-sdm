@@ -69,12 +69,31 @@ data ConvertedBreakingModel f =
     }
 
 
+
+
+data NormalServiceModel f =
+  NormalServiceModel {
+    _nsm_sb01   :: Acceleration f,
+    _nsm_sb12   :: Acceleration f,
+    _nsm_model0 :: A_Break f,
+    _nsm_model1 :: A_Break f,
+    _nsm_model2 :: A_Break f
+    }
+
+
+data NormalServiceModels f =
+  NormalServiceModels {
+    _nsms_breakposition_G :: Maybe (NormalServiceModel f),
+    _nsms_breakposition_T :: Maybe (NormalServiceModel f)
+    }
+
+
+
 makePrisms ''BreakPosition
-
 makeClassy ''ConvertingBreakingModelInput
-
 makeLenses ''ConvertedBreakingModel
-
+makeLenses ''NormalServiceModel
+makeLenses ''NormalServiceModels
 
 
 

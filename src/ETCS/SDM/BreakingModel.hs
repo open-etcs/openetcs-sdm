@@ -7,32 +7,28 @@ module ETCS.SDM.BreakingModel
        , module ETCS.SDM.BreakingModelConverter
        ) where
 
-import           Numeric.Units.Dimensional.TF.Prelude
+import           Control.Lens hiding ((*~))
 import           ETCS.SDM.BreakingModelConverter
+import ETCS.SDM.Helper
 import           ETCS.SDM.Types
-import           ETCS.SDM.Helper
+import Numeric.Units.Dimensional.TF.Prelude
 
 
 
 
-newtype NormalServiceModelT f =
-  NormalServiceModel ( Acceleration f
-                     , Acceleration f
-                     , A_Break f
-                     , A_Break f
-                     , A_Break f
-                     )
-
-type NormalServiceModel f = BreakPosition -> NormalServiceModelT f
-
-
-
-a_break_normal_service :: (HasBreakingModelBase t f) =>
-                         BreakPosition -> t f -> NormalServiceModel f -> A_Break f
-a_break_normal_service bpos m nsm_f
-  |                   (abs0 < a_sb01) = f0
-  | (abs0 >= a_sb01) && (abs0 < a_sb12) = f1
-  | otherwise                         = f2
-  where abs0 = a_break_service m (0 *~ kmh)
-        (NormalServiceModel (a_sb01, a_sb12, f0, f1, f2)) = nsm_f bpos
-                
+a_break_normal_service ::
+  (HasBreakingModelBase t f, RealFloat f, Floating f) =>
+  t f -> NormalServiceModels f -> BreakPosition -> Maybe (A_Break f)
+a_break_normal_service model nsms bpos =
+  let nsmM = nsms ^. case bpos of
+        FreightTrainG -> nsms_breakposition_G
+        _             -> nsms_breakposition_T
+      abs0 = a_break_service model (0 *~ kmh)
+      a_break_normal_service' nsm
+        | (abs0 < nsm ^. nsm_sb01) =
+            nsm ^. nsm_model0
+        | (abs0 >= nsm ^. nsm_sb01) && (abs0 < nsm ^. nsm_sb12) =
+            nsm ^. nsm_model1
+        | otherwise =
+            nsm ^. nsm_model2
+  in maybe Nothing (Just . a_break_normal_service') nsmM
