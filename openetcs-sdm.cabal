@@ -18,8 +18,10 @@ cabal-version:       >=1.10
 library
   exposed-modules:     ETCS.SDM,
                        ETCS.SDM.Types,
-                       ETCS.SDM.BreakingModel
+                       ETCS.SDM.Stepper,
+                       ETCS.SDM.BreakingModel,
                        ETCS.SDM.BreakingModelConverter
+                       
   other-modules:       ETCS.SDM.Helper,
                        ETCS.SDM.Intern
   other-extensions:    TemplateHaskell
@@ -27,6 +29,7 @@ library
                        containers,
                        lens,
                        sodium,
+                       type-unary,
                        dimensional-tf
   hs-source-dirs:      src
   default-language:    Haskell2010
