@@ -1,13 +1,18 @@
 {-# LANGUAGE Trustworthy #-}
 
 module ETCS.SDM.BreakingModel
-       ( A_Break, T_Break
+       ( -- * Types
+         A_Break, T_Break
+       , BreakPosition(..)
+         -- ** Input
        , NormalServiceModels
        , BreakingModelBase
        , ConvertingBreakingModelInput
+         -- ** Output
        , BreakingModel
-       , BreakPosition(..)       
+         -- * create model
        , mkBreakingModel
+         -- ** query model
        , a_break_emergency, t_break_emergency
        , a_break_service, t_break_service
        , a_break_normal_service
