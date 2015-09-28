@@ -1,25 +1,46 @@
-{-# LANGUAGE TypeFamilies  #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE Trustworthy #-}
 
-module ETCS.SDM.Stepper (Stepper (..), stepperFunction)  where
-
-import           TypeUnary.Vec
-
+module ETCS.SDM.Stepper
+  ( StepperFunction, mk_a_break_stepper, a_break_stepper
+  ) where
 
 
-newtype Stepper n a b = Stepper (Vec n a, Vec (S n) b)
+import           ETCS.SDM.Types
+import           Numeric.Units.Dimensional.TF.Prelude
+import qualified Prelude                              as P ()
 
-stepperFunction :: (Eq a, Ord a, Num a) => Stepper n a b -> a -> b
-stepperFunction = stepperFunction' . zipStepperFunction
+mk_a_break_stepper :: Ord f => [Velocity f] -> [Acceleration f] ->
+                     Maybe (StepperFunction (Velocity f) (Acceleration f))
+mk_a_break_stepper as = stepperFunction as
+
+a_break_stepper :: Ord f => StepperFunction (Velocity f) (Acceleration f) ->
+                          A_Break f
+a_break_stepper = unStepper
 
 
-zipStepperFunction :: (Num a) => Stepper n a b -> (Vec (S n) (a,b))
-zipStepperFunction (Stepper (as', bs)) = zipV (0 :< as') $ bs
+newtype StepperFunction a b = StepperFunction {unStepper :: a -> b}
 
-stepperFunction' :: (Eq a, Ord a, Num a) => Vec (S n) (a, b) -> a -> b
-stepperFunction' ((0, b0) :< (a1, b1)  :< vs) k =
-  if (0 <= k && k <= a1) then b0 else stepperFunction' ((a1,b1) :< vs) k
-stepperFunction' ((a0, b0) :< (a1, b1)  :< vs) k =
-  if (a0 < k && k <= a1) then b0 else stepperFunction' ((a1,b1) :< vs) k
-stepperFunction' ((_, b) :< ZVec) _ = b
+stepperFunction :: Ord a => [a] -> [b] -> Maybe (StepperFunction a b)
+stepperFunction as bs
+ | ((succ . length $ as) == length bs) && (length bs >= 1) && (length bs <= 7) =
+    Just . StepperFunction $ stepperF as bs
+ | otherwise = Nothing
+
+stepperF :: Ord a => [a] -> [b] -> a -> b
+stepperF [] [b] _ = b
+stepperF (a:as) (b:bs) v = if (v <= a) then b else stepperF as bs v
+stepperF [] [] _    = error "error evaluating stepperF on [] []"
+stepperF [] (_:_) _ = error "error evaluating stepperF on [] (_:_)"
+stepperF (_:_) [] _ = error "error evaluating stepperF on (_:_) []"
+
+
+instance Functor (StepperFunction a) where
+  fmap f (StepperFunction sf) = StepperFunction (f . sf)
+
+
+
+
+
+
+
 
