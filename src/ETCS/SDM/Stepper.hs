@@ -1,7 +1,10 @@
 {-# LANGUAGE Trustworthy #-}
 
 module ETCS.SDM.Stepper
-  ( StepperFunction, mk_a_break_stepper, a_break_stepper
+  ( -- * Polymorph Stepper
+    StepperFunction, stepperFunction, unStepper
+    -- * Break Stepper (v -> a)
+  , mk_a_break_stepper, a_break_stepper
   ) where
 
 
@@ -18,13 +21,25 @@ a_break_stepper :: Ord f => StepperFunction (Velocity f) (Acceleration f) ->
 a_break_stepper = unStepper
 
 
-newtype StepperFunction a b = StepperFunction {unStepper :: a -> b}
+newtype StepperFunction a b = StepperFunction { unStepper :: a -> b }
+
 
 stepperFunction :: Ord a => [a] -> [b] -> Maybe (StepperFunction a b)
 stepperFunction as bs
- | ((succ . length $ as) == length bs) && (length bs >= 1) && (length bs <= 7) =
+ | (length bs == (succ . length $ as)) &&
+   (length bs >= 1) &&
+   (length bs <= 7) &&
+   (orderedList as) =
     Just . StepperFunction $ stepperF as bs
  | otherwise = Nothing
+
+
+orderedList :: Ord a => [a] -> Bool
+orderedList [] = True
+orderedList (_:[]) = True
+orderedList (a:b:xs) = b > a && orderedList (b:xs)
+
+
 
 stepperF :: Ord a => [a] -> [b] -> a -> b
 stepperF [] [b] _ = b
