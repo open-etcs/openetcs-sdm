@@ -9,13 +9,13 @@ module ETCS.SDM.SpecialBreaks
        , SpecialBreakType (..)
        , SpecialBreakConfiguration (..)
        , SpecialBreak, _SpecialBreak
-       , sb_isServiceBreak, sb_isEmergencyBreak
+       , sbIsServiceBreak, sbIsEmergencyBreak
        , SpecialBreakModel, _SpecialBreakModel
-       , sbm_regenerativeBreak, sbm_eddyCurrentBreak
-       , sbm_magneticShoeBreak, sbm_epBreak
+       , sbmRegenerativeBreak, sbmEddyCurrentBreak
+       , sbmMagneticShoeBreak, sbmEpBreak
        , ActiveBreaks
-       , ab_regenerativeBreak, ab_eddyCurrentBreak
-       , ab_magneticShoeBreak, ab_epBreak
+       , abRegenerativeBreak, abEddyCurrentBreak
+       , abMagneticShoeBreak, abEpBreak
        , activeEmergencyBreaks
        , activeServiceBreaks
        ) where
@@ -48,8 +48,8 @@ data SpecialBreakConfiguration =
 -- | represents the configuration of a 'SpecialBreak'
 data SpecialBreak t =
   SpecialBreak {
-    _sb_type      :: SpecialBreakType t,
-    _sb_interface :: Maybe SpecialBreakConfiguration
+    _sbType      :: SpecialBreakType t,
+    _sbInterface :: Maybe SpecialBreakConfiguration
     }
 
 
@@ -57,20 +57,20 @@ data SpecialBreak t =
 -- | the model of a the special break configuration
 data SpecialBreakModel =
   SpecialBreakModel {
-    _sbm_regenerativeBreak :: SpecialBreak RegenerativeBreak,
-    _sbm_eddyCurrentBreak  :: SpecialBreak EddyCurrentBreak,
-    _sbm_magneticShoeBreak :: SpecialBreak MagneticShoeBreak,
-    _sbm_epBreak           :: SpecialBreak EpBreak
+    _sbmRegenerativeBreak :: SpecialBreak RegenerativeBreak,
+    _sbmEddyCurrentBreak  :: SpecialBreak EddyCurrentBreak,
+    _sbmMagneticShoeBreak :: SpecialBreak MagneticShoeBreak,
+    _sbmEpBreak           :: SpecialBreak EpBreak
     } deriving (Show, Eq)
 
 
 
 data ActiveBreaks =
   ActiveBreaks {
-    _ab_regenerativeBreak :: Bool,
-    _ab_eddyCurrentBreak  :: Bool,
-    _ab_magneticShoeBreak :: Bool,
-    _ab_epBreak           :: Bool
+    _abRegenerativeBreak :: Bool,
+    _abEddyCurrentBreak  :: Bool,
+    _abMagneticShoeBreak :: Bool,
+    _abEpBreak           :: Bool
     } deriving (Eq, Ord, Show)
 
 
@@ -96,26 +96,26 @@ activeServiceBreaks = activeBreaksOn AffectsServiceBreakOnly
 
 activeBreaksOn :: SpecialBreakConfiguration -> SpecialBreakModel -> ActiveBreaks
 activeBreaksOn p m = ActiveBreaks
-  (specialBreakAffected p sbm_regenerativeBreak m)
-  (specialBreakAffected p sbm_eddyCurrentBreak m)
-  (specialBreakAffected p sbm_magneticShoeBreak m)
-  (specialBreakAffected p sbm_epBreak m)
+  (specialBreakAffected p sbmRegenerativeBreak m)
+  (specialBreakAffected p sbmEddyCurrentBreak m)
+  (specialBreakAffected p sbmMagneticShoeBreak m)
+  (specialBreakAffected p sbmEpBreak m)
 
 specialBreakAffected ::
   SpecialBreakConfiguration -> Lens' SpecialBreakModel (SpecialBreak t) ->
   SpecialBreakModel -> Bool
 specialBreakAffected p l a =
   maybe False (\c -> c == AffectsBothBreaks || c == p) $
-  a ^. l . sb_interface
+  a ^. l . sbInterface
 
 
 _SpecialBreak :: Prism' (SpecialBreakType t, Maybe SpecialBreakConfiguration)
                 (SpecialBreak t)
 _SpecialBreak = prism' fromSpecialBreak toSpecialBreak
-  where fromSpecialBreak sb = (sb ^. sb_type, sb ^. sb_interface)
+  where fromSpecialBreak sb = (sb ^. sbType, sb ^. sbInterface)
         toSpecialBreak (t, i) =
           let sb = SpecialBreak t i
-          in if (validSpecialBreakConfiguration sb) then Just sb else Nothing
+          in if validSpecialBreakConfiguration sb then Just sb else Nothing
 
 
 
@@ -123,9 +123,9 @@ _SpecialBreak = prism' fromSpecialBreak toSpecialBreak
 
 validSpecialBreakConfiguration :: SpecialBreak t -> Bool
 validSpecialBreakConfiguration sb =
-  case sb ^. sb_interface of
+  case sb ^. sbInterface of
   Nothing -> True
-  Just bc -> Set.member bc  . validBreakConfigurations $ sb ^. sb_type
+  Just bc -> Set.member bc  . validBreakConfigurations $ sb ^. sbType
     where
       validBreakConfigurations ::
         SpecialBreakType t -> Set SpecialBreakConfiguration
@@ -147,14 +147,14 @@ validSpecialBreakConfiguration sb =
 
 
 
-sb_isServiceBreak :: SpecialBreak t -> Bool
-sb_isServiceBreak b =
-  let i = (b ^. sb_interface)
+sbIsServiceBreak :: SpecialBreak t -> Bool
+sbIsServiceBreak b =
+  let i = (b ^. sbInterface)
   in (i == Just AffectsServiceBreakOnly) || (i == Just AffectsBothBreaks)
 
-sb_isEmergencyBreak :: SpecialBreak t -> Bool
-sb_isEmergencyBreak b =
-  let i = (b ^. sb_interface)
+sbIsEmergencyBreak :: SpecialBreak t -> Bool
+sbIsEmergencyBreak b =
+  let i = (b ^. sbInterface)
   in (i == Just AffectsEmergencyBreakOnly) || (i == Just AffectsBothBreaks)
 
 
