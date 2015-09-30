@@ -17,4 +17,4 @@ breakingModelConverter :: (RealFloat f, Floating f) =>
                          Prism' (ConvertingBreakingModelInput f) (ConvertedBreakingModel f)
 breakingModelConverter =
   prism' (view convertingBreakingModelInput) $ \i ->
-  if (validConvertion i) then Just . breakingModelConverter' $ i else Nothing
+  if validConvertion i then Just . breakingModelConverter' $ i else Nothing
