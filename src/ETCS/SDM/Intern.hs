@@ -17,9 +17,9 @@ validConvertion i   =
         PassangerTrainP ->  900 *~ meter
         FreightTrainG   -> 1500 *~ meter
         FreightTrainP   -> 1500 *~ meter
-  in (0 *~ kmh <= v) && (v <= 200 *~ kmh) &&
-     (30 *~ one < bp ) && (bp <= 250 *~ one) &&
-     (0 *~ meter < l) && (l <= lmax)
+  in (0  *~ kmh   <= v)   && (v  <= 200 *~ kmh) &&
+     (30 *~ one   < bp ) && (bp <= 250 *~ one) &&
+     (0  *~ meter < l)   && (l  <= lmax)
 
 
 breakingModelConverter'

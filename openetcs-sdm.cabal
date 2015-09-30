@@ -21,6 +21,7 @@ library
                        ETCS.SDM.Stepper,
                        ETCS.SDM.BreakingModel,
                        ETCS.SDM.BreakingModelConverter
+                       ETCS.SDM.SpecialBreaks
                        
   other-modules:       ETCS.SDM.Helper,
                        ETCS.SDM.Intern
